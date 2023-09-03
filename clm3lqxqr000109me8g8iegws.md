@@ -137,8 +137,6 @@ Now let's understand the commands:
 * `--dns-zone=kubevpro.devopswithritesh.in`: Sets the DNS zone for the cluster
     
 
-  
-
 Using the above command we can create the configuration for our cluster:
 
 ![](https://cdn.hashnode.com/res/hashnode/image/upload/v1693749668369/de4bd3a1-c09e-498a-8976-a32ac72be07b.png align="center")
@@ -186,3 +184,13 @@ We can delete the cluster by simple command:
 Now you can see instances are shutting down:
 
 ![](https://cdn.hashnode.com/res/hashnode/image/upload/v1693752205918/2bf2f8fe-258a-4ea4-a3f3-779a74b14de1.png align="center")
+
+# Quick Kops Commands
+
+* **List clusters with:** `kops get cluster`
+    
+* **Edit this cluster with:** `kops edit cluster` [`kubevpro.devopswithritesh.in`](http://kubevpro.devopswithritesh.in)
+    
+* **Edit your node instance group:** `kops edit ig --name=kubevpro.devopswithritesh.in nodes-us-east-1a`
+    
+* **Edit your control-plane instance group:** `kops edit ig --name=kubevpro.devopswithritesh.in control-plane`
