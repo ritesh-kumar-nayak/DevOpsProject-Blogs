@@ -385,7 +385,7 @@ resource "azurerm_application_gateway" "web_application_gateway" {
 
 ### **5\. Attach the Application Gateway with VMSS Backend**
 
-![](https://cdn.hashnode.com/res/hashnode/image/upload/v1732932068013/9ce608cd-b35f-40b1-a96a-9da923066283.png align="center")
+![](https://cdn.hashnode.com/res/hashnode/image/upload/v1732934101319/7624a063-ad84-4a5b-942e-86005ea0b0b9.png align="center")
 
 Previously, the Virtual Machine Scale Set (VMSS) was configured with a standard load balancer for traffic distribution. In this setup, we have transitioned the VMSS to utilize the **Application Gateway's backend address pool**.
 
