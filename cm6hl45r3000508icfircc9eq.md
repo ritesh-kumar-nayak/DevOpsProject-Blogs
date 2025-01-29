@@ -3,6 +3,7 @@ title: "Streamline Microservices Deployment on AKS Using Azure DevOps CI/CD and 
 datePublished: Wed Jan 29 2025 07:28:15 GMT+0000 (Coordinated Universal Time)
 cuid: cm6hl45r3000508icfircc9eq
 slug: streamline-microservices-deployment-on-aks-using-azure-devops-cicd-and-gitops
+tags: azure-devops, gitops, aks, argocd, aksazure-kubernetes-services
 
 ---
 
@@ -588,4 +589,4 @@ This script will update the deployment manifests with the latest image tags afte
 
 # Conclusion
 
-With this, we have implemented **Continuous Integration and Continuous Delivery** for 3 microservices along with GitOps implementation.
+With this, we have implemented **Continuous Integration and Continuous Delivery** for 3 microservices along with GitOps implementation via ArgoCD
