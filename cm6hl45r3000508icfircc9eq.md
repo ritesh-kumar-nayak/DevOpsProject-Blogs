@@ -3,6 +3,7 @@ title: "Streamline Microservices Deployment on AKS Using Azure DevOps CI/CD and 
 datePublished: Wed Jan 29 2025 07:28:15 GMT+0000 (Coordinated Universal Time)
 cuid: cm6hl45r3000508icfircc9eq
 slug: streamline-microservices-deployment-on-aks-using-azure-devops-cicd-and-gitops
+cover: https://cdn.hashnode.com/res/hashnode/image/upload/v1742291041536/71f9efa5-a692-4a44-b10b-928161a8d51d.png
 tags: azure-devops, gitops, aks, argocd, aksazure-kubernetes-services
 
 ---
