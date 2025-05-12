@@ -563,12 +563,84 @@ module "aws_ec2" {
 }
 ```
 
-7. **There are some shell scripts that you want to run after creating your resources with Terraform so how would you achieve this?**
+7. **You want to run some shell scripts after creating your resources with Terraform, so how would you achieve this?**
     
     **Ans:** You can achieve this using provisioners. There are 3 types of provisions in Terraform:
     
-    * **Local Exec Provisioners:**
+    * ***Local Exec Provisioners:*** This provisioner executes commands and scripts locally on your local machine.
         
-    * **Remote Exec Provisioners:**
+    * ***Remote Exec Provisioners:*** It executes commands and scripts on a provisioned remote machine.
         
-    * **File Provisioners:**
+    * ***File Provisioners:*** It moves files to the provisioned resources.
+        
+    
+    In this given scenario, we can use File Provisioners and Remote Exec Provisioners combined, which will copy the script file to the remote server and execute the same, respectively.
+    
+8. **Your company is looking to enable High Availability. How can you perform blue-green deployment using Terraform?**
+    
+    **Ans:** To implement a blue-green deployment using Terraform, you can provision two identical environments—commonly referred to as **blue** and **green**—using infrastructure components like **Virtual Machine Scale Sets (VMSS)** in Azure or **Auto Scaling Groups (ASG)** in AWS.
+    
+    Once the new (green) environment is deployed and thoroughly tested, you can switch traffic from the existing (blue) environment to the green one by updating the **Load Balancer backend pool** or modifying **DNS records**. This approach minimizes downtime and allows easy rollback if issues are detected.
+    
+9. **Your company wants to automate Terraform through CI/CD pipeline. How can you integrate Terraform with CI/CD pipelines?**
+    
+
+**Ans:** Integrating Terraform with a CI/CD pipeline involves setting up an automated workflow that handles infrastructure provisioning and management consistently. Here's a step-by-step guide to achieve this:
+
+***Step 1: Store Terraform Code in a Version Control System (VCS):***
+
+* Push your Terraform configuration files (`.tf` files) to a source code repository such as **GitHub**, **Azure Repos**, or **GitLab**.
+    
+* Follow a branching strategy (e.g., feature, staging, production branches) to manage infrastructure changes.
+    
+    ***Step 2: Set Up Remote Backend for State Management:***
+    
+* Use a remote backend like **Azure Storage Account**, **AWS S3 with DynamoDB**, or **Terraform Cloud** to manage the Terraform state file securely and support collaboration.
+    
+    ***Step 3: Define CI/CD Pipeline Configuration:***
+    
+* Create a pipeline file (e.g., `azure-pipelines.yml`, `.gitlab-ci.yml`, or GitHub Actions workflow) with Terraform stages like:
+    
+    * **Terraform Init**
+        
+    * **Terraform Validate**
+        
+    * **Terraform Plan**
+        
+    * **Terraform Apply** (manual approval for production)
+        
+    
+    ***Step 4: Configure Pipeline Agent and Environment:***
+    
+    * Use a **self-hosted agent** or **cloud-hosted agent** with Terraform installed.
+        
+    * Set up environment variables or secrets to securely pass cloud provider credentials (e.g., Azure service principal, AWS access keys).
+        
+    
+    ***Step 5: Implement Pipeline Steps:***
+    
+    Typical pipeline stages:
+    
+    1. **Terraform Init** – Initialize the working directory.
+        
+    2. **Terraform Validate** – Check for syntax or configuration errors.
+        
+    3. **Terraform Plan** – Show the execution plan of proposed changes.
+        
+    4. **Terraform Apply** – Apply the changes (with manual approval if needed).
+        
+    5. (Optional) **Terraform Destroy** – Clean up resources after testing.
+        
+
+***Step 6: Add Approval Gates and Environment Controls:***
+
+* Use **manual approvals** or **release gates** to control changes to production.
+    
+* Configure role-based access to ensure only authorized personnel can approve or apply changes.
+    
+
+***Step 7: Monitor and Audit:***
+
+* Enable logging and notification integrations (e.g., Slack, Microsoft Teams).
+    
+* Track infrastructure changes via version control and pipeline run history.
