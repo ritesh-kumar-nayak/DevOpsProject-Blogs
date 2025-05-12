@@ -644,3 +644,211 @@ module "aws_ec2" {
 * Enable logging and notification integrations (e.g., Slack, Microsoft Teams).
     
 * Track infrastructure changes via version control and pipeline run history.
+    
+
+10. **Describe how you can use Terraform with configuration management tools like Ansible.**
+    
+    **Ans:** Terraform and Ansible complement each other in infrastructure automation workflows. While **Terraform** is used for **provisioning infrastructure**, **Ansible** is used for **configuring the provisioned resources**.
+    
+    In our project, we use **Terraform to provision virtual machines (VMs)** and other infrastructure components. Once the VMs are up and running, **Ansible takes over to configure these servers**—installing and setting up various applications and agents such as **ELK Stack, Rapid7, Arctic Wolf**, and others.
+    
+    This integration allows us to:
+    
+    * Automate end-to-end provisioning and configuration.
+        
+    * Maintain separation of concerns—Terraform manages infrastructure, Ansible manages software.
+        
+    * Achieve faster and more consistent deployments across environments.
+        
+11. **Your infrastructure contains database passwords and other sensitive information. How can you manage secrets and sensitive data in Terraform?**
+    
+
+**Ans:** Managing sensitive data securely is crucial when using Terraform. Below are best practices and methods we follow to handle secrets:
+
+***Use Azure Key Vault (or other Secret Managers):***
+
+* We primarily use **Azure Key Vault** to store and retrieve secrets like database passwords, API keys, and certificates securely.
+    
+* Terraform can be configured to fetch secrets from Key Vault dynamically during execution.
+    
+
+***Use Terraform Input Variables with*** `sensitive = true` :
+
+* Marking variables as `sensitive` prevents Terraform from displaying them in logs or plan outputs.
+    
+* Avoid hardcoding values directly into the `.tf` files.
+    
+
+***Use Environment Variables for Sensitive Inputs:***
+
+* Environment variables (e.g., `TF_VAR_db_password`) can be used to pass sensitive data securely to Terraform at runtime.
+    
+
+***Never Hardcode Secrets in Terraform Files:***
+
+* Always use variables or external secret sources instead of embedding secrets directly in `.tf` manifests.
+    
+
+***Protect Sensitive Files with*** `.gitignore` ***:***
+
+* Add files containing secrets (like `*.pem`, `.env`, SSH keys) to your `.gitignore` to ensure they are not committed to version control.
+    
+
+***Implement Linters and Pre-Commit Hooks:***
+
+* Use tools like `tflint`, `tfsec`, or `pre-commit` hooks to detect and prevent accidental inclusion of sensitive data in code.
+    
+
+12. **How can you specify dependencies between resources in Terraform?**
+    
+    **Ans:** In Terraform, dependencies between resources are typically handled automatically through **implicit dependencies** based on references. However, when more control is needed, you can define **explicit dependencies**. Here’s how both methods work:
+    
+    * ***<mark>Implicit Dependencies </mark> (Recommended):***
+        
+        Terraform automatically understands the dependency graph when one resource references another.
+        
+        **Example:** A **Virtual Machine** that depends on a **Network Interface**, which in turn depends on a **Subnet** and **Virtual Network**.
+        
+        ```yaml
+        resource "azurerm_virtual_network" "vnet" {
+          name                = "my-vnet"
+          address_space       = ["10.0.0.0/16"]
+          location            = "East US"
+          resource_group_name = azurerm_resource_group.rg.name
+        }
+        
+        resource "azurerm_subnet" "subnet" {
+          name                 = "my-subnet"
+          resource_group_name  = azurerm_resource_group.rg.name
+          virtual_network_name = azurerm_virtual_network.vnet.name
+          address_prefixes     = ["10.0.1.0/24"]
+        }
+        
+        resource "azurerm_network_interface" "nic" {
+          name                = "my-nic"
+          location            = "East US"
+          resource_group_name = azurerm_resource_group.rg.name
+        
+          ip_configuration {
+            name                          = "internal"
+            subnet_id                     = azurerm_subnet.subnet.id
+            private_ip_address_allocation = "Dynamic"
+          }
+        }
+        
+        resource "azurerm_linux_virtual_machine" "vm" {
+          name                  = "my-vm"
+          resource_group_name   = azurerm_resource_group.rg.name
+          location              = "East US"
+          size                  = "Standard_B1s"
+          admin_username        = "azureuser"
+          network_interface_ids = [azurerm_network_interface.nic.id]
+          # other configuration...
+        }
+        ```
+        
+        Terraform knows the VM depends on the NIC, which depends on the subnet and VNet — all handled **implicitly**
+        
+    * ***<mark>Explicit Dependencies </mark> (Using*** `depends_on`***):***
+        
+        If there’s no direct reference but a dependency still exists, use the `depends_on` argument.
+        
+        **Example:** You want a Public IP to be created **only after** a Network Security Group (NSG), even though there’s no direct reference:
+        
+        ```yaml
+        resource "azurerm_network_security_group" "nsg" {
+          name                = "my-nsg"
+          location            = "East US"
+          resource_group_name = azurerm_resource_group.rg.name
+          # rules...
+        }
+        
+        resource "azurerm_public_ip" "public_ip" {
+          name                = "my-public-ip"
+          location            = "East US"
+          resource_group_name = azurerm_resource_group.rg.name
+          allocation_method   = "Static"
+        
+          depends_on = [azurerm_network_security_group.nsg]
+        }
+        ```
+        
+    * ***Module-Level Dependencies:***
+        
+        If using modules (e.g., separate modules for networking, compute, storage), use `depends_on` at the module level to control the order.
+        
+        ```yaml
+        module "network" {
+          source = "./modules/network"
+          # outputs a subnet ID
+        }
+        
+        module "vm" {
+          source     = "./modules/compute"
+          subnet_id  = module.network.subnet_id
+          depends_on = [module.network]
+        }
+        ```
+        
+        * Use **references** (like resource IDs or names) for implicit dependencies.
+            
+        * Use `depends_on` When there’s no direct reference, but a logical dependency exists.
+            
+        * Manage module dependencies carefully using `depends_on` and output values.
+            
+13. **You have 20 resources created through Terraform, but you want to delete only one of them. Is it possible to destroy a single resource out of multiple resources using Terraform?**
+    
+    **Ans:** Yes, Terraform allows you to **destroy a specific resource** without affecting the rest of your infrastructure. You can use the following command to destroy a single resource:
+    
+    `terraform destroy -target=<resource_type.resource_name>`
+    
+    ***Example:*** If you want to destroy a specific Azure Virtual Machine: `terraform destroy -target=azurerm_linux_virtual_`[`machine.my`](http://machine.my)`_vm`
+    
+14. **How can you create a particular type of resource multiple times without duplicating the code?**
+    
+    **Ans: Y**ou can use `count` or `for_each` in Terraform to create multiple instances of the same resource dynamically, without duplicating code.
+    
+    * ***Using*** `count` ***(Index-based iteration):***
+        
+        Use `count` when you want to create **a fixed number** of identical or similar resources.
+        
+        **Example: Create 3 Azure Storage Accounts**
+        
+        ```yaml
+        resource "azurerm_storage_account" "storage" {
+          count                    = 3
+          name                     = "mystorage${count.index}"
+          resource_group_name      = azurerm_resource_group.rg.name
+          location                 = azurerm_resource_group.rg.location
+          account_tier             = "Standard"
+          account_replication_type = "LRS"
+        }
+        ```
+        
+    * ***Using*** `for_each` ***(Key-based iteration):***
+        
+        Use `for_each` When creating **named resources** or when working with maps and sets.
+        
+        **Example: Create Storage Accounts using a map**
+        
+        ```yaml
+        variable "storage_accounts" {
+          default = {
+            sa1 = "eastus"
+            sa2 = "westus"
+          }
+        }
+        
+        resource "azurerm_storage_account" "storage" {
+          for_each                 = var.storage_accounts
+          name                     = each.key
+          location                 = each.value
+          resource_group_name      = azurerm_resource_group.rg.name
+          account_tier             = "Standard"
+          account_replication_type = "LRS"
+        }
+        ```
+        
+15. **What is the Terraform module registry?**
+    
+    **Ans:** The **Terraform Module Registry** is a **centralized repository of reusable Terraform modules** maintained by HashiCorp and the Terraform community. It provides a collection of pre-built, versioned, and well-documented modules that help you **automate infrastructure provisioning** without writing everything from scratch.
